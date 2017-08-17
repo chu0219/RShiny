@@ -7,10 +7,12 @@
 # Age - sliderInput
 # Occupation - radioButtons
 # PensionBand - checkboxGroupInput
+# PostcodeGroup - checkboxGroupInput
 
 library(shiny)
 library(data.table)
 library(ggplot2)
+library(reshape2)
 
 ui <- fluidPage(
   titlePanel("Pensioners by postcode group"),
@@ -31,21 +33,21 @@ ui <- fluidPage(
                   label = "Occupation type",
                   choices = c("All", "Manual", "Office")),
       
-      checkboxGroupInput("PensionBand",
-                  label = "Pension Band",
-                  choices = LETTERS[1:5],
-                  selected = LETTERS[1:5])
+      checkboxGroupInput("PostcodeGroup",
+                         label = "Postcode Group",
+                         choices = LETTERS[1:7],
+                         selected = LETTERS[1:7])
   ),
     
     mainPanel(
-      plotOutput("hist")
+      plotOutput("plot")
     )
   )
 )
 
 server <- function(input, output) {
   
-  output$hist <- renderPlot({
+  output$plot <- renderPlot({
     sampleDT <- readRDS("../sampleDT.rds")
     
     filterDT <- sampleDT[PensionAmount/1000 >= input$PensionAmount[1] & PensionAmount/1000 <= input$PensionAmount[2]]
@@ -58,16 +60,20 @@ server <- function(input, output) {
       filterDT <- filterDT[Occupation == "O"]
     }
     
-    filterDT <- filterDT[PensionBand %in% input$PensionBand]
+    filterDT <- filterDT[PostcodeGroup %in% input$PostcodeGroup]
     
-    plotDT <- setkey(filterDT[, .N, by = PostcodeGroup], by = PostcodeGroup)
+    plotsDT <- split(filterDT[, c("PensionAmount", "Age", "PostcodeGroup")], 
+                     PostcodeGroup)
+    plotsDT <- lapply(plotsDT, function (DT) {
+      return(DT[,-3])
+    })
+    meltDT <- melt(plotsDT, id = "Age") 
     
-    ggplot(data = testDT, aes(x = PostcodeGroup, y = N, fill = PostcodeGroup)) + 
-      geom_bar(stat = "identity") +
-      guides(fill = FALSE) +
+    ggplot(data = meltDT, aes(x = Age, y = value, group = variable, colour = L1)) + 
+      geom_point() +
       scale_fill_brewer(palette = "Set2") +
-      xlab("Postcode Group") +
-      ylab("Frequency")
+      ylab("Pension amount (£)") +
+
     
   })
   
