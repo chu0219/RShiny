@@ -10,6 +10,7 @@
 
 library(shiny)
 library(data.table)
+library(ggplot2)
 
 ui <- fluidPage(
   titlePanel("Pensioners by postcode group"),
@@ -19,8 +20,8 @@ ui <- fluidPage(
       h3("Options"),
       
       sliderInput("PensionAmount", 
-                  label = "Pension Amount (£):",
-                  min = 0, max = 20000, value = c(0, 20000)),
+                  label = "Pension Amount (£000s):",
+                  min = 0, max = 20, value = c(0, 20)),
   
       sliderInput("Age", 
                   label = "Age:",
@@ -42,23 +43,31 @@ ui <- fluidPage(
   )
 )
 
-
 server <- function(input, output) {
   
   output$hist <- renderPlot({
-    sampleDT <- readRDS("sampleDT.rds")
+    sampleDT <- readRDS("../sampleDT.rds")
     
-    plotDT <- sampleDT[PensionAmount >= input$PensionAmount[1] & PensionAmount <= input$PensionAmount[2]]
+    filterDT <- sampleDT[PensionAmount/1000 >= input$PensionAmount[1] & PensionAmount/1000 <= input$PensionAmount[2]]
     
-    plotDT <- plotDT[Age >= input$Age[1] & Age <= input$Age[2]]
+    filterDT <- filterDT[Age >= input$Age[1] & Age <= input$Age[2]]
     
     if (input$Occupation == "Manual") {
-      plotDT <- plotDT[Occupation == "M"]
-    } else (input$Occupation == "Office") {
-      plotDT <- plotDT[Occupation == "O"]
+      filterDT <- filterDT[Occupation == "M"]
+    } else if (input$Occupation == "Office") {
+      filterDT <- filterDT[Occupation == "O"]
     }
     
-    plotDT <- plotDT[PostcodeGroup %in% input$PostcodeGroup]
+    filterDT <- filterDT[PensionBand %in% input$PensionBand]
+    
+    plotDT <- setkey(filterDT[, .N, by = PostcodeGroup], by = PostcodeGroup)
+    
+    ggplot(data = testDT, aes(x = PostcodeGroup, y = N, fill = PostcodeGroup)) + 
+      geom_bar(stat = "identity") +
+      guides(fill = FALSE) +
+      scale_fill_brewer(palette = "Set2") +
+      xlab("Postcode Group") +
+      ylab("Frequency")
     
   })
   
