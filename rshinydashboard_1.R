@@ -9,17 +9,31 @@ ui <- dashboardPage(
   dashboardSidebar(
     sidebarMenu(
       menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
-      menuItem("Tab 1", tabName = "tab1", icon = icon("line-chart")),
-      menuItem("Tab 2", tabName = "tab2", icon = icon("bar-chart")),
-      menuItem("Tab 3", tabName = "tab3", icon = icon("gbp")),
-      menuItem("Tab 4", tabName = "tab4", icon = icon("table")),
-      menuItem("Tab 5", tabName = "tab5", icon = icon("file-text-o")),
-      menuItem("Tab 6", tabName = "tab6", icon = icon("github")),
-      menuItem("Tab 7", tabName = "tab7", icon = icon("envelope-o"))
+      menuItem("Load data", tabName = "data", icon = icon("database")),
+      menuItem("Charts 1", tabName = "charts1", icon = icon("line-chart")),
+      menuItem("Charts 2", tabName = "charts2", icon = icon("bar-chart")),
+      menuItem("Some money info", tabName = "tab3", icon = icon("gbp")),
+      menuItem("Tables", tabName = "tables", icon = icon("table")),
+      menuItem("More info", tabName = "tab5", icon = icon("file-text-o")),
+      menuItem("Github repositry", tabName = "github", icon = icon("github")),
+      menuItem("Contact", tabName = "contact", icon = icon("envelope-o"))
       )
   ),
   
   dashboardBody(
+    tabItems(
+      # First tab - dashboard
+      tabItem(tabName = "dashboard",
+              fluidRow(
+              )
+      ),
+      
+      # Second tab - database
+      tabItem(tabName = "data",
+              fluidRow()
+              )
+      
+    )
   )
 )
 
