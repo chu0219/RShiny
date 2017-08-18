@@ -15,7 +15,7 @@ library(ggplot2)
 library(reshape2)
 
 ui <- fluidPage(
-  titlePanel("Pensioners by postcode group"),
+  titlePanel("Average pension vs age by postcode group"),
   
   sidebarLayout(
     sidebarPanel(
@@ -40,7 +40,7 @@ ui <- fluidPage(
   ),
     
     mainPanel(
-      plotOutput("plot")
+      plotOutput("plot", width = "100%", height = "500px")
     )
   )
 )
@@ -62,19 +62,16 @@ server <- function(input, output) {
     
     filterDT <- filterDT[PostcodeGroup %in% input$PostcodeGroup]
     
-    plotsDT <- split(filterDT[, c("PensionAmount", "Age", "PostcodeGroup")], 
-                     PostcodeGroup)
-    plotsDT <- lapply(plotsDT, function (DT) {
-      return(DT[,-3])
-    })
-    meltDT <- melt(plotsDT, id = "Age") 
+    plotDT <- filterDT[, c("PensionAmount", "Age", "PostcodeGroup")]
+    plotDT2 <- plotDT[, lapply(.SD, mean), by = c("PostcodeGroup", "Age")]
     
-    ggplot(data = meltDT, aes(x = Age, y = value, group = variable, colour = L1)) + 
-      geom_point() +
+    ggplot(data = plotDT2, aes(x = Age, y = PensionAmount, group = PostcodeGroup, 
+                               colour = PostcodeGroup)) + 
+      geom_line() +
+      theme(legend.position = "bottom") +
       scale_fill_brewer(palette = "Set2") +
-      ylab("Pension amount (£)") +
-
-    
+      ylab("Average pension amount (£)")
+  
   })
   
 }

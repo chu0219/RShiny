@@ -7,7 +7,12 @@ load("~/My Documents/R Scripts/RShiny/SampleData.RData")
 
 # Template
 ui <- fluidPage(
-  titlePanel("Title")
+  titlePanel("Title"),
+  
+  sidebarLayout(
+    sidebarPanel(),
+    mainPanel()
+  )
                 )
 
 server <- function(input, output) {
